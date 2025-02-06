@@ -31,6 +31,12 @@ SetLayeredWindowAttributes.argtypes = [wintypes.HWND, wintypes.COLORREF, ctypes.
 SetLayeredWindowAttributes.restype = wintypes.BOOL
 
 class ChatOverlay(QtWidgets.QMainWindow):
+    """
+    Janela de sobreposição que exibe o chat do Streamlabs.
+    
+    Permite alternar entre o modo de edição (para reposicionamento da janela)
+    e o modo overlay (janela transparente e sem interação com o mouse) ao pressionar a tecla Control.
+    """
     def __init__(self, url, width=300, height=600):
         super().__init__()
         
@@ -179,9 +185,11 @@ class ChatOverlay(QtWidgets.QMainWindow):
         self.show()
 
     def check_control_key(self):
-        
+        """
+        Verifica se a tecla Control está pressionada e alterna entre o modo de edição
+        e o modo overlay.
+        """
         is_control_pressed = bool(GetAsyncKeyState(VK_CONTROL) & 0x8000)
-
         if is_control_pressed and not self.edit_mode:
             self.switch_to_edit_mode()
         elif not is_control_pressed and self.edit_mode:
@@ -252,8 +260,19 @@ class ChatOverlay(QtWidgets.QMainWindow):
 def main():
     app = QtWidgets.QApplication(sys.argv)
     
-    chat_url = "https://streamlabs.com/widgets/chat-box/v1/4485FA70F1938B583520"
-    overlay = ChatOverlay(chat_url, width=300, height=600)
+    # Solicita a URL do Streamlabs Chat ao usuário, com valor padrão
+    default_url = "https://streamlabs.com/widgets/chat-box/v1/4485FA70F1938B583520"
+    url, ok = QtWidgets.QInputDialog.getText(
+        None,
+        "URL do Streamlabs Chat",
+        "Digite a URL do Streamlabs Chat:",
+        QtWidgets.QLineEdit.Normal,
+        default_url
+    )
+    if not ok or not url.strip():
+        sys.exit("Nenhuma URL fornecida. Encerrando o programa.")
+    
+    overlay = ChatOverlay(url.strip(), width=300, height=600)
     sys.exit(app.exec_())
 
 if __name__ == "__main__":
